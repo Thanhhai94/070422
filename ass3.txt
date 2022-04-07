@@ -1,0 +1,151 @@
+1. Weather Observation Station 5 
+select  top(1)
+city ,  len(City) as length
+from station
+order by length , city
+
+select  top(1)
+city ,  len(City) as length
+from station
+order by length desc , city
+
+2. Binary Tree Nodes
+select 
+case
+    when P is null then convert(varchar,N)+' Root'
+    when N in (select P from BST) then convert(varchar,N)+' Inner'
+    else convert(varchar,N)+' Leaf'
+END
+From BST
+order by N
+
+3. New Companies
+select C.company_code, C.founder, 
+    count(distinct E.Lead_manager_code),
+    count(distinct E.senior_manager_code),
+    count(distinct E.manager_code),
+    count(distinct E.Employee_code)
+from Company C Join Employee E
+on C.company_code = E.company_code
+group by C.company_code, C.founder
+order by C.company_code
+
+4. Top Earners
+select  salary*months as earnings, count(*)
+from employee
+where salary*months in (select max(salary*months) from employee)
+group by salary*months
+order by earnings desc
+
+5. Weather Observation Station 15
+select convert(decimal(7,4),LONG_W)
+from station
+where LAT_N in (select max(LAT_N) from station where LAT_N < 137.2345)
+
+6. Weather Observation Station 17
+select convert(Decimal(7,4),long_w)
+from station
+where lat_n = (select min(lat_n) from station where lat_n > 38.7780)
+
+7. Weather Observation Station 20
+begin transaction
+SELECT LAT_n, ROW_NUMBER() OVER (ORDER BY LAT_N) AS [stt]
+INTO TB1
+FROM STATION
+ORDER BY LAT_N
+
+SELECT CONVERT(DECIMAL(7,4),LAT_N)
+FROM TB1
+WHERE STT=(SELECT (MAX(STT)+MIN(STT))/2 FROM TB1)
+
+rollback transaction
+
+8. Population Census
+select sum(population)
+from (select country.continent, city.population
+from city 
+inner join country
+on city.countrycode = country.code
+where country.continent = 'asia') as table1
+
+9. African Cities
+select name
+from (
+select city.name, country.continent
+from city
+join country
+on city.countrycode = country.code
+)as tb1
+where continent = 'Africa'
+
+10. Average Population of Each Continent
+select distinct continent, avg(population)
+from (
+select city.population, country.continent
+from city
+join country
+on city.countrycode = country.code
+)as tb1
+group by continent
+
+11. The Report
+select case
+    when grade <8 then NULL else name end, grade, marks
+from(select name,  (select grade  
+	from Grades as G 
+	where S.marks between G.Min_Mark and G.Max_mark  ) as grade ,marks
+from Students as S) as tb
+ORDER BY GRADE DESC, NAME
+
+12. Ollivander's Inventory
+select w.id, wp.age, w.coins_needed, w.power
+from wands as w
+join wands_property as wp
+on (w.code = wp.code)
+where w.coins_needed in (
+                            select min(w1.coins_needed)
+                            from wands as w1
+                            join wands_property as wp2
+                            on (w1.code = wp2.code)
+                            where wp2.age = wp.age and w1.power = w.power
+)
+and wp.is_evil = 0
+order by w.power desc, wp.age desc
+
+13. 
+with data as
+( 
+    select h.hacker_id, h.name, count(c.challenge_id) as num
+    from hackers h
+    join challenges c
+    on h.hacker_id = c.hacker_id
+    group by h.hacker_id, h.name
+)
+select hacker_id, name, num
+from data
+where num in (select max(num) from data) or 
+num in (SELECT num FROM data
+GROUP BY num
+HAVING count(num)=1 )
+order by num desc, hacker_id
+
+
+
+14.
+with data as
+(select H.hacker_id id, H.name, S.challenge_id C_id, max(S.score) as max
+from hackers H
+join submissions S
+on H.hacker_id = S.hacker_id
+group by H.hacker_id, H.name, S.challenge_id
+)
+select id,name, sum(max) as total
+from data
+group by id, name
+having sum(max) <>0
+order by total desc, id
+
+
+
+
+
